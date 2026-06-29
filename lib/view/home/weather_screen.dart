@@ -21,10 +21,23 @@ class HomeScreen extends StatelessWidget {
       body: Stack(
         children: [
           // 1. Level 0: Dynamic Weather Background
+          // 1. Level 0: Dynamic Weather Background
           Positioned.fill(
-            child: Image.network(
-              controller.backgroundUrl.value,
-              fit: BoxFit.cover,
+            child: Obx(
+              () => AnimatedSwitcher(
+                duration: const Duration(
+                  milliseconds: 800,
+                ), // Smooth cross-fade transition
+                child: Image.asset(
+                  controller.backgroundAsset.value,
+                  // The ValueKey is the secret ingredient.
+                  // It forces Flutter to destroy the old image and build the new one.
+                  key: ValueKey(controller.backgroundAsset.value),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+              ),
             ),
           ),
 
@@ -89,7 +102,9 @@ class HomeScreen extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  controller.locationName.value, // Or bind to actual location later
+                                  controller
+                                      .locationName
+                                      .value, // Or bind to actual location later
                                   style: const TextStyle(
                                     fontFamily: 'Plus Jakarta Sans',
                                     fontSize: 32,
@@ -111,7 +126,8 @@ class HomeScreen extends StatelessWidget {
                               style: const TextStyle(
                                 fontFamily: 'Plus Jakarta Sans',
                                 fontSize: 16,
-                                color: Color(0xFFC4C7C8),
+                                color: AtmosphericClarity
+                                    .surface, // on-surface color
                               ),
                             ),
                           ],
@@ -146,32 +162,45 @@ class HomeScreen extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${current.temp.round()}°',
-                          style: const TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: 96,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.04,
-                            height: 1.0,
+                        Obx(
+                          () => Text(
+                            controller.formatTemp(current.temp),
+                            style: const TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: 96,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: -0.04,
+                              height: 1.0,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
                         // Placeholder for your Pill-shaped Unit Toggle
-                        Container(
-                          margin: const EdgeInsets.only(top: 16),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'C / F',
-                            style: TextStyle(color: Colors.white),
+                        // Replace your old C/F container with this:
+                        Obx(
+                          () => GestureDetector(
+                            onTap: () => controller.toggleUnits(),
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                controller.isCelsius.value
+                                    ? '°C | F'
+                                    : 'C | °F',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -221,10 +250,6 @@ class HomeScreen extends StatelessWidget {
                                 itemCount:
                                     controller.weatherData.value!.hourly.length,
                                 itemBuilder: (context, index) {
-                                  final hourData = controller
-                                      .weatherData
-                                      .value!
-                                      .hourly[index];
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 24.0),
                                     child: Column(
@@ -241,11 +266,13 @@ class HomeScreen extends StatelessWidget {
                                           Icons.wb_sunny,
                                           color: Colors.amber,
                                         ), // Map icon code
-                                        Text(
-                                          '${hourData.temp.round()}°',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
+                                        Obx(
+                                          () => Text(
+                                            controller.formatTemp(current.temp),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -259,7 +286,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                
+
                     // THE NEW 10-DAY FORECAST BUTTON
                     GestureDetector(
                       onTap: () => Get.to(() => const TenDaysScreen()),
