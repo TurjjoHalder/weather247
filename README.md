@@ -88,16 +88,7 @@ Weather247 is a feature-rich weather dashboard that demonstrates advanced Flutte
 
 </table>
 
-**Expected folder structure**
 
-```text
-assets/
-└── screenshots/
-    ├── home.png
-    ├── search.png
-    ├── forecast.png
-    └── weather_details.png
-```
 
 ---
 
@@ -157,28 +148,24 @@ Only the widgets depending on the observable rebuild, resulting in smooth UI upd
 # 📂 Project Structure
 
 ```text
+
 lib/
-│
-├── main.dart
+├── main.dart                           # Application entry point, route initialization, Firebase setup
 │
 ├── data/
 │   └── models/
-│       └── weather_model.dart
+│       └── weather_model.dart          # Weather data models (Current, Hourly & Daily)
 │
-├── view/
-│   ├── home/
-│   │   ├── home_screen.dart
-│   │   ├── weather_controller.dart
-│   │   └── ten_days_screen.dart
-│   │
-│   └── search/
-│       ├── search_cities_screen.dart
-│       └── search_cities_controller.dart
-│
-└── services/
-    ├── api_service.dart
-    ├── firebase_service.dart
-    └── env_service.dart
+└── view/
+    ├── home/
+    │   ├── home_screen.dart            # Main weather dashboard UI
+    │   ├── weather_controller.dart     # Business logic, API calls, GPS & state management
+    │   └── ten_days_screen.dart        # 10-day weather forecast screen
+    │
+    └── search/
+        ├── search_cities_screen.dart        # City search interface
+        └── search_cities_controller.dart    # Search logic & Firestore history management
+
 ```
 
 ---
