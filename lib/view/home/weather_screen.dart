@@ -92,6 +92,7 @@ class HomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            
                             children: [
                               Text(
                                 controller.locationName.value,
@@ -100,7 +101,10 @@ class HomeScreen extends StatelessWidget {
                                   fontSize: 32,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
+                                  
                                 ),
+                                
+                                
                               ),
                               const SizedBox(width: 8),
                               const Icon(
@@ -309,7 +313,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 2),
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
@@ -345,7 +349,7 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 20),
                 ],
               ),
             );
