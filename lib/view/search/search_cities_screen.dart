@@ -12,7 +12,7 @@ class SearchCitiesScreen extends StatelessWidget {
     final controller = Get.put(SearchCityController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFF131313), // Atmospheric Clarity surface default
+      backgroundColor: const Color(0xFF131313), 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -34,22 +34,21 @@ class SearchCitiesScreen extends StatelessWidget {
             icon: const Icon(Icons.gps_fixed, color: Colors.white),
             onPressed: () {
               Get.find<WeatherController>().fetchWeatherByGps();
-              Get.back(); // Go back to home screen immediately
+              Get.back(); 
             },
           ),
         ],
       ),
       body: Stack(
         children: [
-          // Dynamic intense blur overlay when searching
           Obx(
             () => AnimatedOpacity(
               opacity: controller.isSearchFocused.value ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 300),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 60.0, sigmaY: 60.0), // 60px blur per DESIGN.md
+                filter: ImageFilter.blur(sigmaX: 60.0, sigmaY: 60.0), 
                 child: Container(
-                  color: Colors.black.withOpacity(0.4), // Dim the background distraction
+                  color: Colors.black.withOpacity(0.4), 
                 ),
               ),
             ),
@@ -61,11 +60,11 @@ class SearchCitiesScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Search Bar
+                  
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2), // 20% white glass fill per DESIGN.md
-                      borderRadius: BorderRadius.circular(9999), // Pill-shaped
+                      color: Colors.white.withOpacity(0.2), 
+                      borderRadius: BorderRadius.circular(9999), 
                     ),
                     child: TextField(
                       controller: controller.textController,
@@ -80,7 +79,7 @@ class SearchCitiesScreen extends StatelessWidget {
                           bool success = await weatherCtrl.fetchWeatherByCity(value.trim());
 
                           if (success) {
-                            // Save to Firestore and return home
+                            
                             final current = weatherCtrl.weatherData.value!.current;
                             controller.saveSearch(
                               weatherCtrl.locationName.value,
@@ -98,7 +97,7 @@ class SearchCitiesScreen extends StatelessWidget {
                           }
                         }
                       },
-                      // THE MISSING DECORATION:
+                      
                       decoration: InputDecoration(
                         hintText: 'Search for a city or airport',
                         hintStyle: TextStyle(
@@ -113,7 +112,7 @@ class SearchCitiesScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // 2. Recently Searched Section Header
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -142,7 +141,7 @@ class SearchCitiesScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // THE MISSING FIRESTORE LIST:
+                 
                   Obx(() {
                     if (controller.isLoadingHistory.value) {
                       return const Padding(
@@ -189,7 +188,7 @@ class SearchCitiesScreen extends StatelessWidget {
                   
                   const SizedBox(height: 32),
 
-                  // 3. Popular Cities Section
+                  
                   const Text(
                     'POPULAR CITIES',
                     style: TextStyle(
@@ -206,7 +205,7 @@ class SearchCitiesScreen extends StatelessWidget {
                     spacing: 12.0,
                     runSpacing: 12.0,
                     children: [
-                      // Wrapped these in GestureDetectors too so they are functional!
+                      
                       GestureDetector(
                         onTap: () {
                           Get.find<WeatherController>().fetchWeatherByCity('Paris');
@@ -253,7 +252,6 @@ class SearchCitiesScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget for Recent Search Cards
   Widget _buildRecentSearchCard(String city, String region, int temp, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -319,7 +317,6 @@ class SearchCitiesScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget for Popular City Chips
   Widget _buildPopularCityChip(String city) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),

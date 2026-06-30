@@ -1,199 +1,157 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:weather_247/view/common%20widget/glass_container.dart';
-import 'package:weather_247/view/home/weather_controller.dart'; // Add 'intl' to pubspec.yaml for date formatting
-// Import your WeatherController and GlassContainer here
+import 'package:weather_247/view/common%20widget/daily_weather_card.dart';
+import 'package:weather_247/view/common%20widget/unite_toggle.dart';
+import 'package:weather_247/view/common%20widget/weather_insight_card.dart';
+import 'package:weather_247/view/home/weather_controller.dart';
 
 class TenDaysScreen extends StatelessWidget {
   const TenDaysScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final WeatherController controller = Get.find<WeatherController>();
+    final controller = Get.find<WeatherController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF131313), // Base surface color
+      backgroundColor: const Color(0xFF131313),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          '10-Day Forecast',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          // Dynamic Background Image (Level 0)
-          Positioned.fill(
-            child: Image.network(
-              'https://images.pexels.com/photos/30617942/pexels-photo-30617942/free-photo-of-contemporary-skyscrapers-in-downtown-new-york-city.jpeg', // Replace with dynamic logic
-              fit: BoxFit.cover,
-            ),
-          ),
+      body: Obx(() {
+        if (controller.weatherData.value == null) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
 
-          SafeArea(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                );
-              }
+        final dailyList = controller.weatherData.value!.daily;
 
-              if (controller.errorMessage.value.isNotEmpty) {
-                return Center(
-                  child: Text(
-                    controller.errorMessage.value,
-                    style: const TextStyle(color: Colors.redAccent),
-                  ),
-                );
-              }
-
-              final dailyData = controller.weatherData.value!.daily;
-
-              // Ensure we only show up to 10 days (API might return 8, requires OneCall 3.0/4.0 for more)
-              final displayCount = dailyData.length > 10
-                  ? 10
-                  : dailyData.length;
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // City Name
+              Text(
+                controller.locationName.value.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: Color(0xFF8BA5CE),
                 ),
-                child: GlassContainer(
-                  blur: 30.0,
-                  opacity: 0.15, // 15% opacity per DESIGN.md
-                  borderRadius: BorderRadius.circular(16.0), // rounded-lg
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 24.0,
-                      horizontal: 16.0,
-                    ),
-                    itemCount: displayCount,
-                    separatorBuilder: (context, index) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      child: Divider(
-                        color: Colors.white.withOpacity(0.1),
-                        height: 1,
-                      ),
-                    ),
-                    itemBuilder: (context, index) {
-                      final day = dailyData[index];
-                      // Convert Unix timestamp to DateTime
-                      final date = DateTime.fromMillisecondsSinceEpoch(
-                        day.dt * 1000,
-                      );
+              ),
+              const SizedBox(height: 8),
 
-                      // Format: "Today" for index 0, otherwise "Mon", "Tue", etc.
-                      final dayString = index == 0
-                          ? 'Today'
-                          : DateFormat('EEE').format(date);
-
-                      return _buildDailyRow(
-                        dayString,
-                        day.icon,
-                        day.minTemp,
-                        day.maxTemp,
-                      );
-                    },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '10-Day Forecast',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              );
-            }),
+                  buildUnitToggle(controller),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: dailyList.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final dayData = dailyList[index];
+
+                  final date = DateTime.fromMillisecondsSinceEpoch(
+                    dayData.dt * 1000,
+                  );
+                  final isToday = index == 0;
+                  final dateString = isToday
+                      ? 'Today'
+                      : DateFormat('E d').format(date);
+
+                  return dailyWeatherCard(
+                    dateString: dateString,
+                    iconCode: dayData.icon,
+                    highTemp: dayData.maxTemp,
+                    lowTemp: dayData.minTemp,
+                    controller: controller,
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              weatherInsightCard(
+                icon: Icons.lightbulb_outline,
+                title: 'WEATHER INSIGHT',
+                description: _generateWeatherInsight(dailyList),
+              ),
+              const SizedBox(height: 16),
+
+              weatherInsightCard(
+                icon: Icons.water_drop_outlined,
+                title: 'PRECIPITATION CHANCE',
+                description: _generatePrecipitationInsight(dailyList),
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
-        ],
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildDailyRow(
-    String day,
-    String iconCode,
-    double minTemp,
-    double maxTemp,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // 1. Date (Left)
-        SizedBox(
-          width: 60,
-          child: Text(
-            day,
-            style: const TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-        ),
+  String _generateWeatherInsight(List<dynamic> dailyList) {
+    if (dailyList.isEmpty) return 'Weather data is currently unavailable.';
 
-        // 2. Icon (Center)
-        // Note: Replace with actual local asset mapping for vibrant, multi-colored icons per DESIGN.md
-        const Icon(Icons.cloud, color: Colors.white70, size: 28),
+    final currentHigh = dailyList[0].temp.max;
+    final futureHigh = dailyList.last.temp.max;
 
-        // 3. High/Low Range (Right)
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                '${minTemp.round()}°',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(
-                    0.7,
-                  ), // on-surface-variant equivalent
-                ),
-              ),
-              const SizedBox(width: 8),
+    if (futureHigh < currentHigh - 3) {
+      return 'Temperatures will remain above average for the next few days, with a significant drop expected by next week.';
+    } else if (futureHigh > currentHigh + 3) {
+      return 'Expect a warming trend over the next 7 days, bringing higher than average temperatures.';
+    } else {
+      return 'Temperatures will remain stable and consistent over the upcoming week with no major fluctuations.';
+    }
+  }
 
-              // Subtle Horizontal Bar (Temperature Range Indicator)
-              Container(
-                width: 80,
-                height: 4,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(9999), // rounded-full
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blue.withOpacity(0.6),
-                      Colors.orange.withOpacity(0.8),
-                    ],
-                  ),
-                ),
-              ),
+  String _generatePrecipitationInsight(List<dynamic> dailyList) {
+    if (dailyList.isEmpty) return 'Precipitation data is unavailable.';
 
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 30, // Fixed width to align temperatures neatly
-                child: Text(
-                  '${maxTemp.round()}°',
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    // Search for rain in the upcoming days
+    List<String> rainyDays = [];
+    for (int i = 1; i < dailyList.length; i++) {
+      if (dailyList[i].icon.contains('09') ||
+          dailyList[i].icon.contains('10') ||
+          dailyList[i].icon.contains('11')) {
+        final date = DateTime.fromMillisecondsSinceEpoch(
+          dailyList[i].dt * 1000,
+        );
+        rainyDays.add(DateFormat('EEEE').format(date));
+      }
+    }
+
+    if (rainyDays.isEmpty) {
+      return 'Dry conditions expected. No significant precipitation is forecasted for the next 7 days.';
+    } else if (rainyDays.length == 1) {
+      return 'Expect occasional showers specifically on ${rainyDays.first}.';
+    } else {
+      return 'Expect occasional showers on ${rainyDays[0]} and localized thunderstorms on ${rainyDays[1]} afternoon.';
+    }
   }
 }

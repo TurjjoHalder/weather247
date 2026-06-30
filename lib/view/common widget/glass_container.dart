@@ -18,7 +18,6 @@ class GlassContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      // Use stadium borders for the "pill-shaped" requirement
       borderRadius: borderRadius ?? BorderRadius.circular(24.0),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
@@ -26,7 +25,7 @@ class GlassContainer extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(opacity),
             border: Border.all(
-              color: Colors.white.withOpacity(0.15), // Subtle border
+              color: Colors.white.withOpacity(0.15),
               width: 1.0,
             ),
           ),

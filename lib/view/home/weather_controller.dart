@@ -13,7 +13,6 @@ class WeatherController extends GetxController {
 
   var locationName = 'Locating...'.obs;
   var backgroundAsset = 'assets/images/default.jpg'.obs;
-  // Checks for both variable names just to be safe, and aggressively trims it
   final String apiKey =
       (dotenv.env['OPENWEATHER_API_KEY'] ?? dotenv.env['MY_API_KEY'] ?? '')
           .trim();
@@ -24,7 +23,6 @@ class WeatherController extends GetxController {
     fetchWeatherByGps();
   }
 
-  // --- 1. CORE FETCH METHOD ---
   Future<void> fetchWeatherForCoordinates(
     double lat,
     double lon,
@@ -35,12 +33,10 @@ class WeatherController extends GetxController {
       errorMessage('');
       locationName.value = cityName;
 
-      // 1. Aggressively clean the variables
       final cleanLat = lat.toString().trim();
       final cleanLon = lon.toString().trim();
       final cleanKey = apiKey.trim();
 
-      // 2. Safely construct the URL
       final String urlString =
           'https://api.openweathermap.org/data/3.0/onecall?lat=$cleanLat&lon=$cleanLon&exclude=minutely,alerts&units=metric&appid=$cleanKey';
 
@@ -62,12 +58,10 @@ class WeatherController extends GetxController {
     }
   }
 
-  // --- 2. GEOCODING (CITY NAME TO LAT/LON) ---
   Future<bool> fetchWeatherByCity(String city) async {
     try {
       isLoading(true);
       final cleanKey = apiKey.trim();
-      // Ensure the city string is also URL-safe
       final cleanCity = Uri.encodeComponent(city.trim());
 
       final url =
@@ -95,7 +89,6 @@ class WeatherController extends GetxController {
     }
   }
 
-  // --- 3. REVERSE GEOCODING & GPS ---
   Future<void> fetchWeatherByGps() async {
     try {
       isLoading(true);
@@ -139,30 +132,24 @@ class WeatherController extends GetxController {
 
   var isCelsius = true.obs;
 
-  // 2. Add this method to toggle
   void toggleUnits() {
     isCelsius.value = !isCelsius.value;
-    // This will automatically update any UI wrapped in Obx()
   }
 
-  // 3. Add a helper to format temperature
   String formatTemp(double tempC) {
     if (isCelsius.value) {
       return "${tempC.round()}°";
     } else {
-      // Convert Celsius to Fahrenheit
       double tempF = (tempC * 9 / 5) + 32;
       return "${tempF.round()}°";
     }
   }
-  String formatHour(int timestamp) {
-  // Convert seconds to milliseconds, then to DateTime
-  final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-  // Returns format like "2 PM"
-  return DateFormat('h a').format(date);
-}
 
-  // --- 4. DYNAMIC BACKGROUND MAPPER ---
+  String formatHour(int timestamp) {
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    return DateFormat('h a').format(date);
+  }
+
   void _updateDynamicBackground(String iconCode) {
     if (iconCode.contains('01')) {
       backgroundAsset.value = 'assets/images/clear.jpg';

@@ -58,7 +58,7 @@ class CurrentWeather {
 }
 
 class HourlyWeather {
-  final int dt; // Unix timestamp
+  final int dt;
   final double temp;
   final String icon;
 
@@ -75,12 +75,14 @@ class HourlyWeather {
 
 class DailyWeather {
   final int dt;
+  final Temperature temp;
   final double minTemp;
   final double maxTemp;
   final String icon;
 
   DailyWeather({
     required this.dt,
+    required this.temp,
     required this.minTemp,
     required this.maxTemp,
     required this.icon,
@@ -89,9 +91,24 @@ class DailyWeather {
   factory DailyWeather.fromJson(Map<String, dynamic> json) {
     return DailyWeather(
       dt: json['dt'],
+      temp: Temperature.fromJson(json['temp']),
       minTemp: (json['temp']['min']).toDouble(),
       maxTemp: (json['temp']['max']).toDouble(),
       icon: json['weather'][0]['icon'],
+    );
+  }
+}
+
+class Temperature {
+  final double min;
+  final double max;
+
+  Temperature({required this.min, required this.max});
+
+  factory Temperature.fromJson(Map<String, dynamic> json) {
+    return Temperature(
+      min: (json['min'] ?? 0.0).toDouble(),
+      max: (json['max'] ?? 0.0).toDouble(),
     );
   }
 }
